@@ -74,7 +74,6 @@ export default async function GalleryImagesPage({
                         readOnly
                         value={src}
                         aria-label="URL de la imagen"
-                        onFocus={(e) => e.currentTarget.select()}
                         className="w-full text-xs px-2 py-1.5 rounded border bg-transparent text-[var(--color-ink-soft)]"
                         style={{ borderColor: "var(--color-line)" }}
                       />

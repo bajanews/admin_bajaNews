@@ -8,6 +8,7 @@ const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
   PUBLICADA: { bg: "var(--color-success-tint)", fg: "var(--color-success)" },
   BORRADOR: { bg: "var(--color-warning-tint)", fg: "var(--color-warning)" },
   ARCHIVADA: { bg: "var(--color-line)", fg: "var(--color-ink-soft)" },
+  RETENIDA: { bg: "var(--color-warning-tint)", fg: "var(--color-warning)" },
 };
 
 export function PostsTable({

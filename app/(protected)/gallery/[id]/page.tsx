@@ -8,6 +8,28 @@ import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
 import { ImageUploadForm } from "@/components/gallery/ImageUploadForm";
 import { deleteImage, uploadImages } from "@/lib/actions/gallery";
 import type { Gallery, GalleryImage } from "@/types/gallery";
+import { CopyCode } from "@/components/gallery/CopyCode";
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/'/g, "&#39;")
+    .replace(/"/g, "&quot;");
+}
+
+function codigoGaleria(images: GalleryImage[]): string {
+  const config = '{"viewerToolbar":{"display":true}, "viewerHideToolsDelay":9999999}';
+  return [...images]
+    .sort((a, b) => a.id - b.id)
+    .map((image) => {
+      const src = `/uploads/images-gallery/${image.name}`;
+      const caption = escapeHtml(image.caption);
+      return `<a><img src='${src}' data-ngsrc='${src}' data-nanogallery2-lightbox='${config}' alt='${caption}'><p>${caption}</p></a>`;
+    })
+    .join("\n");
+}
 
 export default async function GalleryImagesPage({
   params,
@@ -46,6 +68,16 @@ export default async function GalleryImagesPage({
       <FlashBanner ok={ok} error={error} />
 
       <ImageUploadForm action={uploadImages.bind(null, gallery.id)} />
+
+      {images.length > 0 && (
+        <div className="border-t px-4 sm:px-6 py-6" style={{ borderColor: "var(--color-line)" }}>
+          <h2 className="text-sm font-semibold text-[var(--color-ink)] mb-1">Código para la noticia</h2>
+          <p className="text-sm text-[var(--color-ink-soft)] mb-3">
+            Cópialo y pégalo en el editor de la noticia con el botón «Insertar HTML».
+          </p>
+          <CopyCode code={codigoGaleria(images)} />
+        </div>
+      )}
 
       <div className="border-t px-4 sm:px-6 py-6" style={{ borderColor: "var(--color-line)" }}>
         {images.length === 0 ? (

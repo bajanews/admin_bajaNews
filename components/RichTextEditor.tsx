@@ -21,6 +21,10 @@ import {
   RemoveFormat,
   SourceEditing,
   PasteFromOffice,
+  Image,
+  LinkImage,
+  HtmlEmbed,
+  GeneralHtmlSupport,
 } from "ckeditor5";
 import esTranslations from "ckeditor5/translations/es.js";
 
@@ -75,6 +79,10 @@ export function RichTextEditor({
               RemoveFormat,
               SourceEditing,
               PasteFromOffice,
+              Image,
+              LinkImage,
+              HtmlEmbed,
+              GeneralHtmlSupport,
             ],
             toolbar: [
               "heading",
@@ -102,8 +110,13 @@ export function RichTextEditor({
               "|",
               "link",
               "|",
+              "htmlEmbed",
               "sourceEditing",
             ],
+            htmlEmbed: { showPreviews: false },
+            htmlSupport: {
+              allow: [{ name: /^.*$/, styles: true, attributes: true, classes: true }],
+            },
           }}
           onChange={(_event, editor) => setHtml(editor.getData())}
         />

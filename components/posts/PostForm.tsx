@@ -39,6 +39,16 @@ const SECTION_OPTIONS = [
   { value: "RSS", label: "RSS" },
 ];
 
+const CATEGORIAS_PRIMERO = [4, 3];
+
+function ordenarCategorias(categories: Category[]): Category[] {
+  const prioridad = (c: Category) => {
+    const pos = CATEGORIAS_PRIMERO.indexOf(c.id);
+    return pos === -1 ? CATEGORIAS_PRIMERO.length : pos;
+  };
+  return [...categories].sort((a, b) => prioridad(a) - prioridad(b));
+}
+
 export function PostForm({
   post,
   categories,
@@ -52,6 +62,7 @@ export function PostForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const currentImage = post ? uploadUrl("posts", post.image) : null;
+  const categoriasOrdenadas = ordenarCategorias(categories);
 
   return (
     <form action={formAction} className="w-full grid grid-cols-4 gap-5 px-4 sm:px-6 py-6">
@@ -99,9 +110,9 @@ export function PostForm({
         label="Categoría"
         name="categoryId"
         required
-        defaultValue={post?.categoryId}
+        defaultValue={post?.categoryId ?? categoriasOrdenadas[0]?.id}
         placeholder="Selecciona una categoría"
-        options={categories.map((c) => ({ value: String(c.id), label: c.name }))}
+        options={categoriasOrdenadas.map((c) => ({ value: String(c.id), label: c.name }))}
         colSpan={2}
       />
 
@@ -117,7 +128,7 @@ export function PostForm({
         label="Estatus"
         name="status"
         required
-        defaultValue={post?.status ?? "BORRADOR"}
+        defaultValue={post?.status ?? "PUBLICADA"}
         options={STATUS_OPTIONS}
         colSpan={2}
       />

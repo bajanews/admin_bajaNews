@@ -29,6 +29,7 @@ const STATUS_OPTIONS = [
   { value: "BORRADOR", label: "Borrador" },
   { value: "PUBLICADA", label: "Publicada" },
   { value: "ARCHIVADA", label: "Archivada" },
+  { value: "RETENIDA", label: "Retenida" },
 ];
 
 const SECTION_OPTIONS = [

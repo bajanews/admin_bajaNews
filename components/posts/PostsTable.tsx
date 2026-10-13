@@ -26,7 +26,7 @@ export function PostsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+      <table className="w-full min-w-[720px] text-sm" style={{ tableLayout: "fixed" }}>
         <caption className="sr-only">Lista de noticias</caption>
         <thead>
           <tr className="border-b" style={{ borderColor: "var(--color-line)" }}>

@@ -5,25 +5,36 @@ import { getSession } from "@/lib/session";
 import { canDeletePosts, canEditPost } from "@/lib/roles";
 import { uploadUrl } from "@/lib/assets";
 import { ModuleCard } from "@/components/ModuleCard";
+import { FlashBanner } from "@/components/FlashBanner";
 import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
 import { deletePost } from "@/lib/actions/posts";
 import type { PostDetail } from "@/types/post";
 
-function Row({ label, children, muted }: { label: string; children: React.ReactNode; muted?: boolean }) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-4 gap-1 sm:gap-4 px-4 sm:px-6 py-4 border-b last:border-0" style={{ borderColor: "var(--color-line)" }}>
-      <dt className="sm:col-span-1 text-sm font-semibold text-[var(--color-ink-soft)]">{label}</dt>
-      <dd className={`sm:col-span-3 text-[var(--color-ink)] ${muted ? "text-[var(--color-ink-soft)]" : ""}`}>{children}</dd>
-    </div>
-  );
+const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
+  PUBLICADA: { bg: "var(--color-success-tint)", fg: "var(--color-success)" },
+  BORRADOR: { bg: "var(--color-warning-tint)", fg: "var(--color-warning)" },
+  RETENIDA: { bg: "var(--color-danger-tint)", fg: "var(--color-danger)" },
+  ARCHIVADA: { bg: "var(--color-line)", fg: "var(--color-ink-soft)" },
+};
+
+function fechaLarga(iso: string | null | undefined): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 export default async function PostShowPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const { id } = await params;
+  const { ok, error } = await searchParams;
   const session = await getSession();
 
   let post: PostDetail;
@@ -39,39 +50,89 @@ export default async function PostShowPage({
   const canDelete = canDeletePosts(roles);
 
   const imgSrc = uploadUrl("posts", post.image);
+  const statusStyle = STATUS_STYLES[post.status] ?? STATUS_STYLES.ARCHIVADA;
 
   return (
-    <ModuleCard title={post.title}>
-      <dl>
-        <Row label="#">
-          <span className="font-tabular">{post.id}</span>
-        </Row>
-        <Row label="Estatus" muted>
-          {post.status} · {post.newsType || "NOTICIA"} · {post.section || "GENERAL"}
-        </Row>
-        <Row label="Imagen">
-          {imgSrc ? (
-            <img className="w-full max-w-xs aspect-video object-cover rounded-md" src={imgSrc} alt={post.photoDescription || ""} />
-          ) : (
-            <span className="text-[var(--color-ink-soft)]">Sin imagen</span>
-          )}
-        </Row>
-        <Row label="Pie de foto" muted>
-          {post.photoDescription || <span className="italic">Sin especificar</span>}
-        </Row>
-        <Row label="Sub título">{post.subtitle}</Row>
-        <Row label="Nota">
-          <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: post.body }} />
-        </Row>
-        <Row label="Corresponsal" muted>{post.authorEmail}</Row>
-        <Row label="Categoría">{post.categoryName}</Row>
-        <Row label="Creado" muted>
-          <span className="font-tabular">{post.createdAt ? post.createdAt.slice(0, 10) : ""}</span>
-        </Row>
-        <Row label="Actualizado" muted>
-          <span className="font-tabular">{post.updatedAt ? post.updatedAt.slice(0, 10) : "—"}</span>
-        </Row>
-      </dl>
+    <ModuleCard title="Vista previa de la noticia">
+      <FlashBanner ok={ok} error={error} />
+
+      {/* Barra de datos del admin */}
+      <div
+        className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 sm:px-6 py-3 text-sm border-b"
+        style={{ borderColor: "var(--color-line)" }}
+      >
+        <span className="font-tabular text-[var(--color-ink-soft)]">#{post.id}</span>
+        <span
+          className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
+          style={{ background: statusStyle.bg, color: statusStyle.fg }}
+        >
+          {post.status}
+        </span>
+        <span className="text-[var(--color-ink-soft)]">
+          {post.newsType || "NOTICIA"} · {post.section || "GENERAL"}
+        </span>
+        <span className="text-[var(--color-ink-soft)]">Corresponsal: {post.authorEmail}</span>
+        <span className="text-[var(--color-ink-soft)] font-tabular">
+          Creado {post.createdAt?.slice(0, 10)}
+          {post.updatedAt ? ` · Actualizado ${post.updatedAt.slice(0, 10)}` : ""}
+        </span>
+      </div>
+
+      {/* Nota como se verá en el sitio */}
+      <article className="mx-auto w-full max-w-3xl px-4 sm:px-6 py-8">
+        <div className="mb-4">
+          <span className="inline-block bg-red-600 px-3.5 py-1.5 text-xs font-bold uppercase text-white">
+            {post.categoryName}
+          </span>
+        </div>
+
+        <h1 className="text-2xl md:text-3xl font-bold leading-tight text-[var(--color-ink)]">
+          {post.title}
+        </h1>
+
+        {post.head && (
+          <p className="mt-2 text-base font-semibold text-[var(--color-ink-soft)]">{post.head}</p>
+        )}
+
+        <p className="mt-3 text-sm italic text-[var(--color-ink-soft)]">
+          Publicado: {fechaLarga(post.createdAt)}
+          {post.updatedAt && ` · Actualizado: ${fechaLarga(post.updatedAt)}`}
+        </p>
+
+        {imgSrc ? (
+          <figure className="mt-6">
+            <img
+              className="w-full aspect-video object-cover rounded-md"
+              src={imgSrc}
+              alt={post.photoDescription || post.title}
+            />
+            {post.photoDescription && (
+              <figcaption className="mt-2 text-sm text-[var(--color-ink-soft)]">{post.photoDescription}</figcaption>
+            )}
+          </figure>
+        ) : (
+          <div
+            className="mt-6 flex aspect-video items-center justify-center rounded-md text-sm"
+            style={{ background: "var(--color-line)", color: "var(--color-ink-soft)" }}
+          >
+            Sin imagen de portada
+          </div>
+        )}
+
+        <p className="my-5 text-lg lg:text-xl italic font-semibold text-justify">{post.subtitle}</p>
+
+        <div className="contenido-nota" dangerouslySetInnerHTML={{ __html: post.body }} />
+
+        {post.tags.length > 0 && (
+          <div className="mt-8 flex flex-wrap gap-2">
+            {post.tags.map((tag) => (
+              <span key={tag} className="bg-gray-300 px-2 py-1 text-sm text-black">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </article>
 
       <div className="flex flex-wrap gap-3 px-4 sm:px-6 py-6 border-t" style={{ borderColor: "var(--color-line)" }}>
         {canEdit && (

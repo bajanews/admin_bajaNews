@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import dynamic from "next/dynamic";
 import { uploadUrl } from "@/lib/assets";
-import { TextField, SelectField, FileField, SubmitButton, FormError } from "@/components/FormField";
+import { TextField, TextAreaField, SelectField, FileField, SubmitButton, FormError } from "@/components/FormField";
 import type { Category } from "@/types/category";
 import type { PostDetail } from "@/types/post";
 import type { PostActionState } from "@/lib/actions/posts";
@@ -87,7 +87,7 @@ export function PostForm({
 
       <TextField label="Título" name="title" required maxLength={255} defaultValue={post?.title} colSpan={4} />
 
-      <TextField label="Sub título" name="subtitle" required defaultValue={post?.subtitle} colSpan={4} />
+      <TextAreaField label="Sub título" name="subtitle" required defaultValue={post?.subtitle} colSpan={4} />
 
       <TextField
         label="Encabezado"
@@ -98,7 +98,7 @@ export function PostForm({
         colSpan={2}
       />
 
-      <TextField
+      <TextAreaField
         label="Pie de foto"
         name="photoDescription"
         required

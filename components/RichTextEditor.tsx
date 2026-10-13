@@ -22,7 +22,14 @@ import {
   SourceEditing,
   PasteFromOffice,
   Image,
+  ImageCaption,
+  ImageStyle,
+  ImageToolbar,
+  ImageResize,
+  ImageInsert,
   LinkImage,
+  SimpleUploadAdapter,
+  MediaEmbed,
   HtmlEmbed,
   GeneralHtmlSupport,
 } from "ckeditor5";
@@ -53,7 +60,11 @@ export function RichTextEditor({
 
       <input type="hidden" name={name} value={html} />
 
-      <div id={id} className="rounded-md overflow-hidden border-2" style={{ borderColor: "var(--color-input-border)" }}>
+      <div
+        id={id}
+        className="editor-nota rounded-md overflow-hidden border-2"
+        style={{ borderColor: "var(--color-input-border)" }}
+      >
         <CKEditor
           editor={ClassicEditor}
           data={defaultValue ?? ""}
@@ -80,7 +91,14 @@ export function RichTextEditor({
               SourceEditing,
               PasteFromOffice,
               Image,
+              ImageCaption,
+              ImageStyle,
+              ImageToolbar,
+              ImageResize,
+              ImageInsert,
               LinkImage,
+              SimpleUploadAdapter,
+              MediaEmbed,
               HtmlEmbed,
               GeneralHtmlSupport,
             ],
@@ -109,10 +127,28 @@ export function RichTextEditor({
               "indent",
               "|",
               "link",
-              "|",
+              "insertImage",
+              "mediaEmbed",
               "htmlEmbed",
+              "|",
               "sourceEditing",
             ],
+            simpleUpload: {
+              uploadUrl: "/api/upload-image",
+            },
+            image: {
+              toolbar: [
+                "imageTextAlternative",
+                "toggleImageCaption",
+                "|",
+                "imageStyle:inline",
+                "imageStyle:block",
+                "imageStyle:side",
+                "|",
+                "linkImage",
+              ],
+              resizeUnit: "%",
+            },
             htmlEmbed: { showPreviews: false },
             htmlSupport: {
               allow: [{ name: /^.*$/, styles: true, attributes: true, classes: true }],

@@ -30,8 +30,8 @@ export function PostsTable({
         <caption className="sr-only">Lista de noticias</caption>
         <thead>
           <tr className="border-b" style={{ borderColor: "var(--color-line)" }}>
-            <th scope="col" className="w-[5%] px-4 sm:px-6 py-3 text-left font-semibold text-[var(--color-ink-soft)]">#</th>
-            <th scope="col" className="w-[38%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Título</th>
+            <th scope="col" className="w-[10%] px-3 py-3 text-left font-semibold text-[var(--color-ink-soft)]">#</th>
+            <th scope="col" className="w-[33%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Título</th>
             <th scope="col" className="w-[12%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Creado</th>
             <th scope="col" className="w-[12%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Estatus</th>
             <th scope="col" className="w-[18%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Categoría</th>
@@ -53,7 +53,7 @@ export function PostsTable({
             const canEdit = canEditPost(roles, currentUserId, post.userId);
             return (
             <tr key={post.id} className="border-b last:border-0" style={{ borderColor: "var(--color-line)" }}>
-                <td className="px-4 sm:px-6 py-3 font-tabular text-[var(--color-ink-soft)]">{post.id}</td>
+                <td className="px-3 py-3 font-tabular text-[var(--color-ink-soft)] whitespace-nowrap">{post.id}</td>
                 <td className="px-4 py-3 text-[var(--color-ink)]">
                   <p className="truncate" title={post.title}>
                     {post.title}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { uploadUrl } from "@/lib/assets";
 import { TextField, TextAreaField, SelectField, FileField, SubmitButton, FormError } from "@/components/FormField";
@@ -42,12 +43,14 @@ const SECTION_OPTIONS = [
 const CATEGORIAS_PRIMERO = [4, 3];
 
 function ordenarCategorias(categories: Category[]): Category[] {
-  const prioridad = (c: Category) => {
-    const pos = CATEGORIAS_PRIMERO.indexOf(c.id);
-    return pos === -1 ? CATEGORIAS_PRIMERO.length : pos;
-  };
-  return [...categories].sort((a, b) => prioridad(a) - prioridad(b));
+  const primero = CATEGORIAS_PRIMERO
+    .map((id) => categories.find((c) => c.id === id))
+    .filter((c): c is Category => Boolean(c));
+  const resto = categories.filter((c) => !CATEGORIAS_PRIMERO.includes(c.id));
+  return [...primero, ...resto];
 }
+
+const CAMPOS_BORRADOR = ["title", "subtitle", "photoDescription", "categoryId", "newsType", "status", "section", "tags"];
 
 export function PostForm({
   post,
@@ -64,8 +67,51 @@ export function PostForm({
   const currentImage = post ? uploadUrl("posts", post.image) : null;
   const categoriasOrdenadas = ordenarCategorias(categories);
 
+  const pathname = usePathname();
+  const storageKey = `borrador-nota:${pathname}`;
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+
+    try {
+      const guardado = window.sessionStorage.getItem(`${storageKey}:campos`);
+      if (guardado) {
+        const valores = JSON.parse(guardado) as Record<string, string>;
+        for (const campo of CAMPOS_BORRADOR) {
+          const el = form.elements.namedItem(campo) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+          if (el && valores[campo] !== undefined) el.value = valores[campo];
+        }
+      }
+    } catch {}
+
+    function guardar() {
+      if (!form) return;
+      const valores: Record<string, string> = {};
+      for (const campo of CAMPOS_BORRADOR) {
+        const el = form.elements.namedItem(campo) as HTMLInputElement | null;
+        if (el) valores[campo] = el.value;
+      }
+      try {
+        window.sessionStorage.setItem(`${storageKey}:campos`, JSON.stringify(valores));
+      } catch {}
+    }
+
+    form.addEventListener("input", guardar);
+    form.addEventListener("change", guardar);
+
+    return () => {
+      form.removeEventListener("input", guardar);
+      form.removeEventListener("change", guardar);
+      try {
+        window.sessionStorage.removeItem(`${storageKey}:campos`);
+      } catch {}
+    };
+  }, [storageKey]);
+
   return (
-    <form action={formAction} className="w-full grid grid-cols-4 gap-5 px-4 sm:px-6 py-6">
+    <form ref={formRef} action={formAction} className="w-full grid grid-cols-4 gap-5 px-4 sm:px-6 py-6">
       {currentImage && (
         <div className="col-span-4">
           <img
@@ -80,25 +126,24 @@ export function PostForm({
       <FileField
         label="Imagen de portada"
         name="image"
-        accept="image/*"
-        hint={post ? "(déjalo vacío para conservar la actual)" : undefined}
+        accept="image/jpeg,image/png"
+        hint={post ? "(déjalo vacío para conservar la actual · JPG/PNG, máx. 1 MB)" : "(JPG/PNG, máx. 1 MB)"}
         colSpan={4}
       />
 
       <TextField label="Título" name="title" required maxLength={255} defaultValue={post?.title} colSpan={4} />
 
-      <TextAreaField label="Sub título" name="subtitle" required defaultValue={post?.subtitle} colSpan={4} />
-
-      <TextField
-        label="Encabezado"
-        name="head"
-        hint="(opcional)"
-        maxLength={255}
-        defaultValue={post?.head ?? ""}
-        colSpan={2}
+      <TextAreaField
+        label="Sub título"
+        name="subtitle"
+        required
+        defaultValue={post?.subtitle}
+        colSpan={4}
+        className="resize-y"
+        style={{ borderColor: "var(--color-input-border)", height: 160 }}
       />
 
-      <TextAreaField
+      <TextField
         label="Pie de foto"
         name="photoDescription"
         required
@@ -111,7 +156,6 @@ export function PostForm({
         name="categoryId"
         required
         defaultValue={post?.categoryId ?? categoriasOrdenadas[0]?.id}
-        placeholder="Selecciona una categoría"
         options={categoriasOrdenadas.map((c) => ({ value: String(c.id), label: c.name }))}
         colSpan={2}
       />
@@ -148,10 +192,10 @@ export function PostForm({
         hint="(separadas por coma)"
         defaultValue={post?.tags?.join(", ") ?? ""}
         placeholder="gobierno, elecciones, tijuana"
-        colSpan={4}
+        colSpan={2}
       />
 
-      <RichTextEditor name="body" label="Nota" defaultValue={post?.body} />
+      <RichTextEditor name="body" label="Nota" defaultValue={post?.body} storageKey={`${storageKey}:body`} />
 
       <FormError message={state.error} />
 

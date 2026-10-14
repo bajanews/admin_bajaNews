@@ -89,9 +89,20 @@ body {
 }
 
 .editor-nota .ck-editor__editable_inline {
-  min-height: 160px;
+  min-height: 260px;
   resize: vertical;
   overflow: auto;
+}
+@media (max-width: 768px) {
+  .editor-nota .ck-editor__editable_inline {
+    resize: none;
+    overflow: visible;
+  }
+  .editor-nota .ck-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
 }
 
 .contenido-nota {

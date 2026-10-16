@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminFetch, AdminApiError } from "@/lib/adminApi";
+import type { PostDetail } from "@/types/post";
 
 export interface PostActionState {
   error?: string;
@@ -12,15 +13,16 @@ export async function createPost(
   _prevState: PostActionState,
   formData: FormData
 ): Promise<PostActionState> {
+  let created: PostDetail;
   try {
-    await adminFetch("/api/admin/posts", { method: "POST", body: formData });
+    created = await adminFetch<PostDetail>("/api/admin/posts", { method: "POST", body: formData });
   } catch (err) {
     return { error: err instanceof AdminApiError ? err.message : "No se pudo guardar la noticia" };
   }
 
   revalidatePath("/posts");
   revalidatePath("/posts/mine");
-  redirect("/posts?ok=" + encodeURIComponent("Noticia creada correctamente"));
+  redirect(`/posts/${created.id}?ok=` + encodeURIComponent("Noticia creada correctamente"));
 }
 
 export async function updatePost(

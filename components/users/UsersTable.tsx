@@ -5,7 +5,7 @@ import type { UserListItem } from "@/types/user";
 export function UsersTable({ users }: { users: UserListItem[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+      <table className="w-full min-w-[720px] text-sm" style={{ tableLayout: "fixed" }}>
         <caption className="sr-only">Lista de usuarios</caption>
         <thead>
           <tr className="border-b" style={{ borderColor: "var(--color-line)" }}>

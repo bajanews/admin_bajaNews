@@ -34,7 +34,7 @@ export default async function CategoriesPage({
       <FlashBanner ok={ok} error={error} />
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+        <table className="w-full min-w-[720px] text-sm" style={{ tableLayout: "fixed" }}>
           <caption className="sr-only">Lista de categorías</caption>
           <thead>
             <tr className="border-b" style={{ borderColor: "var(--color-line)" }}>

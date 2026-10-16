@@ -87,3 +87,43 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+.editor-nota .ck-editor__editable_inline {
+  min-height: 260px;
+  resize: vertical;
+  overflow: auto;
+}
+@media (max-width: 768px) {
+  .editor-nota .ck-editor__editable_inline {
+    resize: none;
+    overflow: visible;
+  }
+  .editor-nota .ck-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+}
+
+.contenido-nota {
+  font-size: 17px;
+  line-height: 1.9;
+  text-align: justify;
+}
+.contenido-nota img,
+.contenido-nota iframe,
+.contenido-nota video {
+  max-width: 100%;
+  height: auto;
+}
+.contenido-nota figure.image {
+  margin: 1.25rem auto;
+}
+.contenido-nota figcaption {
+  font-size: 0.875rem;
+  color: var(--color-ink-soft);
+  text-align: center;
+}
+.contenido-nota p {
+  margin-bottom: 1rem;
+}

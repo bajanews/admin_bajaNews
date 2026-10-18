@@ -42,8 +42,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-paper)] px-4">
       <div className="w-full max-w-sm">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bajanews-logo.jpg" alt="BajaNews.mx" className="h-9 w-auto mb-8 rounded" />
+        <img src="/bajanews-logo.jpg" alt="BajaNews.mx" className="h-9 w-auto mx-auto mb-8 rounded" />
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>

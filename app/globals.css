@@ -1,13 +1,12 @@
-/* Public Sans — interfaz. Pesos usados: 400 (texto), 500 (labels/nav), 600 (botones/títulos), 700 (encabezados). */
 @import "@fontsource/public-sans/400.css";
 @import "@fontsource/public-sans/500.css";
 @import "@fontsource/public-sans/600.css";
 @import "@fontsource/public-sans/700.css";
-
-/* IBM Plex Mono — solo para datos tabulares (IDs, fechas): la alineación monoespaciada
-   ahí cumple una función real (escanear columnas de números), no es decoración. */
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
 
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
@@ -93,6 +92,41 @@ body {
   resize: vertical;
   overflow: auto;
 }
+.editor-nota .ck-content {
+  font-family: "Roboto", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+}
+.editor-nota .ck-content p {
+  text-align: justify;
+}
+
+.editor-nota .ck-content ul,
+.contenido-nota ul {
+  list-style: disc;
+  padding-left: 1.75rem;
+  margin: 0 0 1rem;
+}
+.editor-nota .ck-content ol,
+.contenido-nota ol {
+  list-style: decimal;
+  padding-left: 1.75rem;
+  margin: 0 0 1rem;
+}
+.editor-nota .ck-content ul ul,
+.contenido-nota ul ul {
+  list-style: circle;
+}
+.editor-nota .ck-content li,
+.contenido-nota li {
+  margin-bottom: 0.25rem;
+}
+.editor-nota .ck-content ul.todo-list,
+.contenido-nota ul.todo-list {
+  list-style: none;
+  padding-left: 0;
+}
+
 @media (max-width: 768px) {
   .editor-nota .ck-editor__editable_inline {
     resize: none;
@@ -106,15 +140,19 @@ body {
 }
 
 .contenido-nota {
+  font-family: "Roboto", Arial, sans-serif;
   font-size: 17px;
   line-height: 1.9;
   text-align: justify;
 }
 .contenido-nota img,
-.contenido-nota iframe,
 .contenido-nota video {
   max-width: 100%;
   height: auto;
+}
+
+.contenido-nota iframe {
+  max-width: 100%;
 }
 .contenido-nota figure.image {
   margin: 1.25rem auto;

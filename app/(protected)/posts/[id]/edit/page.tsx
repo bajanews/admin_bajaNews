@@ -6,7 +6,7 @@ import { ModuleCard } from "@/components/ModuleCard";
 import { PostForm } from "@/components/posts/PostForm";
 import { updatePost } from "@/lib/actions/posts";
 import type { Category } from "@/types/category";
-import type { PostDetail } from "@/types/post";
+import type { PostDetail, PostUserOption } from "@/types/post";
 
 export default async function EditPostPage({
   params,
@@ -18,10 +18,12 @@ export default async function EditPostPage({
 
   let post: PostDetail;
   let categories: Category[];
+  let usuarios: PostUserOption[];
   try {
-    [post, categories] = await Promise.all([
+    [post, categories, usuarios] = await Promise.all([
       adminFetch<PostDetail>(`/api/admin/posts/${id}`),
       adminFetch<Category[]>("/api/admin/categories"),
+      adminFetch<PostUserOption[]>("/api/admin/posts/usuarios").catch(() => [] as PostUserOption[]),
     ]);
   } catch (err) {
     if (err instanceof AdminApiError && err.status === 404) notFound();
@@ -37,6 +39,9 @@ export default async function EditPostPage({
       <PostForm
         post={post}
         categories={categories}
+        usuarios={usuarios}
+        currentUserId={session?.user.id}
+        roles={session?.user.roles ?? []}
         action={updatePost.bind(null, post.id)}
         buttonLabel="Actualizar"
       />

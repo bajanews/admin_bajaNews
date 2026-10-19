@@ -56,7 +56,6 @@ export default async function PostShowPage({
     <ModuleCard title="Vista previa de la noticia">
       <FlashBanner ok={ok} error={error} />
 
-      {/* Barra de datos del admin */}
       <div
         className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 sm:px-6 py-3 text-sm border-b"
         style={{ borderColor: "var(--color-line)" }}
@@ -71,14 +70,18 @@ export default async function PostShowPage({
         <span className="text-[var(--color-ink-soft)]">
           {post.newsType || "NOTICIA"} · {post.section || "GENERAL"}
         </span>
-        <span className="text-[var(--color-ink-soft)]">Corresponsal: {post.authorEmail}</span>
+        <span className="text-[var(--color-ink-soft)]">
+          Corresponsal: <strong className="text-[var(--color-ink)]">{post.autorName ?? "—"}</strong>
+        </span>
+        <span className="text-[var(--color-ink-soft)]">
+          Redactó: <strong className="text-[var(--color-ink)]">{post.userName ?? post.authorEmail}</strong>
+        </span>
         <span className="text-[var(--color-ink-soft)] font-tabular">
           Creado {post.createdAt?.slice(0, 10)}
           {post.updatedAt ? ` · Actualizado ${post.updatedAt.slice(0, 10)}` : ""}
         </span>
       </div>
 
-      {/* Nota como se verá en el sitio */}
       <article className="mx-auto w-full max-w-3xl px-4 sm:px-6 py-8">
         <div className="mb-4">
           <span className="inline-block bg-red-600 px-3.5 py-1.5 text-xs font-bold uppercase text-white">
@@ -93,6 +96,12 @@ export default async function PostShowPage({
         {post.head && (
           <p className="mt-2 text-base font-semibold text-[var(--color-ink-soft)]">{post.head}</p>
         )}
+
+        <div className="mt-4 border-b-2 border-red-700 pb-2">
+          <span className="font-semibold text-red-700">{post.autorName ?? post.userName ?? "BajaNews"}</span>
+          {" | "}
+          <span className="font-semibold">BajaNews</span>
+        </div>
 
         <p className="mt-3 text-sm italic text-[var(--color-ink-soft)]">
           Publicado: {fechaLarga(post.createdAt)}

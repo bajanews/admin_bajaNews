@@ -1,9 +1,14 @@
 import "server-only";
 import { cookies } from "next/headers";
-
-const TOKEN_COOKIE = "bn_token";
-const USER_COOKIE = "bn_user";
-const REFRESH_COOKIE = "bn_refresh";
+import {
+  TOKEN_COOKIE,
+  USER_COOKIE,
+  REFRESH_COOKIE,
+  TODAS_LAS_COOKIES,
+  cookieDefaults,
+  leerToken,
+  tokenVencido,
+} from "@/lib/sesionCookies";
 
 export interface SessionUser {
   id: number;
@@ -17,13 +22,6 @@ export interface Session {
   accessToken: string;
   user: SessionUser;
 }
-
-const cookieDefaults = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-};
 
 export async function createSession(params: {
   accessToken: string;
@@ -47,21 +45,31 @@ export async function createSession(params: {
 
 export async function destroySession() {
   const store = await cookies();
-  store.delete(TOKEN_COOKIE);
-  store.delete(USER_COOKIE);
-  store.delete(REFRESH_COOKIE);
+  for (const nombre of TODAS_LAS_COOKIES) {
+    store.set(nombre, "", { ...cookieDefaults, maxAge: 0, expires: new Date(0) });
+  }
 }
 
-/** Para leer la sesión desde Server Components o Route Handlers. */
 export async function getSession(): Promise<Session | null> {
   const store = await cookies();
   const token = store.get(TOKEN_COOKIE)?.value;
-  const userRaw = store.get(USER_COOKIE)?.value;
-  if (!token || !userRaw) return null;
+  const datos = leerToken(token);
+  if (!token || !datos || tokenVencido(datos)) return null;
 
+  let name = "";
+  let lastName = "";
   try {
-    return { accessToken: token, user: JSON.parse(userRaw) as SessionUser };
+    const guardado = JSON.parse(store.get(USER_COOKIE)?.value ?? "null") as Partial<SessionUser> | null;
+    if (guardado && Number(guardado.id) === datos.userId) {
+      name = guardado.name ?? "";
+      lastName = guardado.lastName ?? "";
+    }
   } catch {
-    return null;
+    
   }
+
+  return {
+    accessToken: token,
+    user: { id: datos.userId, email: datos.email, name, lastName, roles: datos.roles },
+  };
 }

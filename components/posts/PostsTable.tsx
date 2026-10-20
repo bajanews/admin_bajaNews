@@ -26,16 +26,17 @@ export function PostsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[720px] text-sm" style={{ tableLayout: "fixed" }}>
+      <table className="w-full min-w-[860px] text-sm" style={{ tableLayout: "fixed" }}>
         <caption className="sr-only">Lista de noticias</caption>
         <thead>
           <tr className="border-b" style={{ borderColor: "var(--color-line)" }}>
-            <th scope="col" className="w-[10%] px-3 py-3 text-left font-semibold text-[var(--color-ink-soft)]">#</th>
-            <th scope="col" className="w-[33%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Título</th>
-            <th scope="col" className="w-[12%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Creado</th>
-            <th scope="col" className="w-[12%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Estatus</th>
-            <th scope="col" className="w-[18%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Categoría</th>
-            <th scope="col" className="w-[15%] px-4 sm:px-6 py-3 text-left font-semibold text-[var(--color-ink-soft)]">
+            <th scope="col" className="w-[8%] px-3 py-3 text-left font-semibold text-[var(--color-ink-soft)]">#</th>
+            <th scope="col" className="w-[28%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Título</th>
+            <th scope="col" className="w-[16%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Corresponsal</th>
+            <th scope="col" className="w-[11%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Creado</th>
+            <th scope="col" className="w-[11%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Estatus</th>
+            <th scope="col" className="w-[12%] px-4 py-3 text-left font-semibold text-[var(--color-ink-soft)]">Categoría</th>
+            <th scope="col" className="w-[14%] px-4 sm:px-6 py-3 text-left font-semibold text-[var(--color-ink-soft)]">
               <span className="sr-only">Acciones</span>
             </th>
           </tr>
@@ -43,7 +44,7 @@ export function PostsTable({
         <tbody>
           {posts.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-6 py-6 text-[var(--color-ink-soft)]">
+              <td colSpan={7} className="px-6 py-6 text-[var(--color-ink-soft)]">
                 No hay noticias todavía.
               </td>
             </tr>
@@ -57,6 +58,11 @@ export function PostsTable({
                 <td className="px-4 py-3 text-[var(--color-ink)]">
                   <p className="truncate" title={post.title}>
                     {post.title}
+                  </p>
+                </td>
+                <td className="px-4 py-3 text-[var(--color-ink)]">
+                  <p className="truncate" title={post.autorName ?? ""}>
+                    {post.autorName ?? "—"}
                   </p>
                 </td>
                 <td className="px-4 py-3 font-tabular text-[var(--color-ink-soft)] whitespace-nowrap">

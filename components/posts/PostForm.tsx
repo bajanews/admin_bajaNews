@@ -6,7 +6,8 @@ import dynamic from "next/dynamic";
 import { uploadUrl } from "@/lib/assets";
 import { TextField, TextAreaField, SelectField, FileField, SubmitButton, FormError } from "@/components/FormField";
 import type { Category } from "@/types/category";
-import type { PostDetail } from "@/types/post";
+import type { PostDetail, PostUserOption } from "@/types/post";
+import { ROLE_ADMIN, ROLE_EDITOR } from "@/lib/roles";
 import type { PostActionState } from "@/lib/actions/posts";
 
 const RichTextEditor = dynamic(
@@ -50,22 +51,45 @@ function ordenarCategorias(categories: Category[]): Category[] {
   return [...primero, ...resto];
 }
 
-const CAMPOS_BORRADOR = ["title", "subtitle", "photoDescription", "categoryId", "newsType", "status", "section", "tags"];
+const CAMPOS_BORRADOR = [
+  "title",
+  "subtitle",
+  "photoDescription",
+  "categoryId",
+  "newsType",
+  "status",
+  "section",
+  "tags",
+  "autorId",
+  "userId",
+];
 
 export function PostForm({
   post,
   categories,
+  usuarios = [],
+  currentUserId,
+  roles = [],
   action,
   buttonLabel = "Guardar",
 }: {
   post?: PostDetail;
   categories: Category[];
+  usuarios?: PostUserOption[];
+  currentUserId?: number;
+  roles?: string[];
   action: (state: PostActionState, formData: FormData) => Promise<PostActionState>;
   buttonLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const currentImage = post ? uploadUrl("posts", post.image) : null;
   const categoriasOrdenadas = ordenarCategorias(categories);
+
+  const opcionesUsuarios = usuarios.map((u) => ({ value: String(u.id), label: u.name }));
+  const mostrarUsuarios = opcionesUsuarios.length > 0;
+  const puedeCambiarRedactor = roles.includes(ROLE_ADMIN) || roles.includes(ROLE_EDITOR);
+  const corresponsalInicial = post?.autorId ?? post?.userId ?? currentUserId;
+  const redactorInicial = post?.userId ?? currentUserId;
 
   const pathname = usePathname();
   const storageKey = `borrador-nota:${pathname}`;
@@ -181,7 +205,7 @@ export function PostForm({
         label="Sección"
         name="section"
         required
-        defaultValue={post?.section ?? "GENERAL"}
+        defaultValue={post?.section ?? "PRINCIPAL"}
         options={SECTION_OPTIONS}
         colSpan={2}
       />
@@ -194,6 +218,29 @@ export function PostForm({
         placeholder="gobierno, elecciones, tijuana"
         colSpan={2}
       />
+
+      {mostrarUsuarios && (
+        <SelectField
+          label="Corresponsal"
+          name="autorId"
+          defaultValue={corresponsalInicial ? String(corresponsalInicial) : ""}
+          placeholder="Selecciona el corresponsal"
+          options={opcionesUsuarios}
+          colSpan={puedeCambiarRedactor ? 2 : 4}
+        />
+      )}
+
+      {mostrarUsuarios && puedeCambiarRedactor && (
+        <SelectField
+          label="Editor"
+          name="userId"
+          hint="(quién escribió la nota)"
+          defaultValue={redactorInicial ? String(redactorInicial) : ""}
+          placeholder="Selecciona un editor"
+          options={opcionesUsuarios}
+          colSpan={2}
+        />
+      )}
 
       <RichTextEditor name="body" label="Nota" defaultValue={post?.body} storageKey={`${storageKey}:body`} />
 

@@ -109,6 +109,10 @@ function envolverEmbeds(html: string): string {
   return raiz.innerHTML;
 }
 
+const FUENTE_NOTA = "Roboto, Arial, sans-serif";
+const BLOQUES_DE_TEXTO = new Set(["P", "LI", "H1", "H2", "H3", "H4", "H5", "H6", "BLOCKQUOTE", "TD", "TH", "DIV"]);
+const BLOQUES_CONTENEDORES = "p,div,ul,ol,li,table,thead,tbody,tr,td,th,h1,h2,h3,h4,h5,h6,blockquote,figure,section,article";
+
 const ESTILOS_DEL_PEGADO = /^(font-family|font-size|font|line-height|color|background|background-color|mso-.*)$/i;
 
 function limpiarPegado(html: string): string {
@@ -134,6 +138,19 @@ function limpiarPegado(html: string): string {
       if (/^(Mso|docs-|c\d+$)/.test(clase)) el.classList.remove(clase);
     }
     if (el.getAttribute("class")?.trim() === "") el.removeAttribute("class");
+  }
+
+  for (const el of Array.from(raiz.querySelectorAll<HTMLElement>("*"))) {
+    if (!BLOQUES_DE_TEXTO.has(el.tagName) || el.closest(".raw-html-embed")) continue;
+    if (el.querySelector(BLOQUES_CONTENEDORES)) continue;
+    if (!el.textContent?.trim()) continue;
+
+    if (!el.style.textAlign) el.style.textAlign = "justify";
+
+    const envoltura = doc.createElement("span");
+    envoltura.style.fontFamily = FUENTE_NOTA;
+    while (el.firstChild) envoltura.appendChild(el.firstChild);
+    el.appendChild(envoltura);
   }
 
   return raiz.innerHTML;
@@ -256,7 +273,7 @@ export function RichTextEditor({
             fontFamily: {
               options: [
                 "default",
-                "Roboto, Arial, sans-serif",
+                FUENTE_NOTA,
                 "Arial, Helvetica, sans-serif",
                 "Georgia, serif",
                 "Times New Roman, Times, serif",
@@ -311,6 +328,15 @@ export function RichTextEditor({
             },
           }}
           onReady={(editor) => {
+            editor.model.enqueueChange({ isUndoable: false }, (writer) => {
+              const root = editor.model.document.getRoot();
+              if (!root) return;
+              const parrafos = Array.from(writer.createRangeIn(root).getItems()).filter(
+                (item) => item.is("element", "paragraph") && !item.hasAttribute("alignment")
+              );
+              for (const parrafo of parrafos) writer.setAttribute("alignment", "justify", parrafo);
+            });
+
             const clipboard = editor.plugins.get("ClipboardPipeline");
             clipboard.on(
               "inputTransformation",

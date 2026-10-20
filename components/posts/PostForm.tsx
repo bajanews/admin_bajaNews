@@ -205,7 +205,7 @@ export function PostForm({
         label="Sección"
         name="section"
         required
-        defaultValue={post?.section ?? "PRINCIPAL"}
+        defaultValue={post?.section ?? "GENERAL"}
         options={SECTION_OPTIONS}
         colSpan={2}
       />

@@ -232,11 +232,11 @@ export function PostForm({
 
       {mostrarUsuarios && puedeCambiarRedactor && (
         <SelectField
-          label="Redactó"
+          label="Editor"
           name="userId"
           hint="(quién escribió la nota)"
           defaultValue={redactorInicial ? String(redactorInicial) : ""}
-          placeholder="Selecciona quién redactó"
+          placeholder="Selecciona un editor"
           options={opcionesUsuarios}
           colSpan={2}
         />

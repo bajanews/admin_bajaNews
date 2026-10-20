@@ -74,7 +74,7 @@ export default async function PostShowPage({
           Corresponsal: <strong className="text-[var(--color-ink)]">{post.autorName ?? "—"}</strong>
         </span>
         <span className="text-[var(--color-ink-soft)]">
-          Redactó: <strong className="text-[var(--color-ink)]">{post.userName ?? post.authorEmail}</strong>
+          Editor: <strong className="text-[var(--color-ink)]">{post.userName ?? post.authorEmail}</strong>
         </span>
         <span className="text-[var(--color-ink-soft)] font-tabular">
           Creado {post.createdAt?.slice(0, 10)}

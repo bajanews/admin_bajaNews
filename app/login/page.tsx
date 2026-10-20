@@ -1,10 +1,8 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    let redirigiendo = false;
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -30,19 +29,25 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/");
-      router.refresh();
+      try {
+        window.sessionStorage.clear();
+      } catch {}
+
+      const from = new URLSearchParams(window.location.search).get("from");
+      const destino = from && from.startsWith("/") && !from.startsWith("//") ? from : "/";
+      redirigiendo = true;
+      window.location.replace(destino);
     } catch {
       setError("No se pudo conectar con el servidor");
     } finally {
-      setLoading(false);
+      if (!redirigiendo) setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-paper)] px-4">
       <div className="w-full max-w-sm">
-        <img src="/bajanews-logo.jpg" alt="BajaNews.mx" className="h-9 w-auto mx-auto mb-8 rounded" />
+        <img src="/bajanews-logo.jpg" alt="BajaNews.mx" className="block h-9 w-auto mx-auto mb-8 rounded" />
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>

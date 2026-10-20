@@ -12,6 +12,9 @@ export interface PostListItem {
   categoryName: string;
   categoryId: number;
   userId: number;
+  autorId?: number | null;
+  autorName?: string | null;
+  userName?: string | null;
 }
 
 export interface PostDetail extends PostListItem {
@@ -22,6 +25,12 @@ export interface PostDetail extends PostListItem {
   userId: number;
   authorEmail: string;
   tags: string[];
+}
+
+export interface PostUserOption {
+  id: number;
+  name: string;
+  email: string;
 }
 
 export interface PagedResult<T> {

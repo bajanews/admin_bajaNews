@@ -7,7 +7,7 @@ import { uploadUrl } from "@/lib/assets";
 import { TextField, TextAreaField, SelectField, FileField, SubmitButton, FormError } from "@/components/FormField";
 import type { Category } from "@/types/category";
 import type { PostDetail, PostUserOption } from "@/types/post";
-import { ROLE_ADMIN, ROLE_EDITOR } from "@/lib/roles";
+import { ROLE_ADMIN } from "@/lib/roles";
 import type { PostActionState } from "@/lib/actions/posts";
 
 const RichTextEditor = dynamic(
@@ -87,9 +87,14 @@ export function PostForm({
 
   const opcionesUsuarios = usuarios.map((u) => ({ value: String(u.id), label: u.name }));
   const mostrarUsuarios = opcionesUsuarios.length > 0;
-  const puedeCambiarRedactor = roles.includes(ROLE_ADMIN) || roles.includes(ROLE_EDITOR);
+  const puedeElegirEditor = roles.includes(ROLE_ADMIN);
   const corresponsalInicial = post?.autorId ?? post?.userId ?? currentUserId;
   const redactorInicial = post?.userId ?? currentUserId;
+  const nombreDeUsuario = (id?: number | null) =>
+    usuarios.find((u) => u.id === id)?.name ?? "";
+  const nombreEditor = post
+    ? post.userName || nombreDeUsuario(post.userId)
+    : nombreDeUsuario(currentUserId);
 
   const pathname = usePathname();
   const storageKey = `borrador-nota:${pathname}`;
@@ -205,7 +210,7 @@ export function PostForm({
         label="Sección"
         name="section"
         required
-        defaultValue={post?.section ?? "GENERAL"}
+        defaultValue={post?.section ?? "PRINCIPAL"}
         options={SECTION_OPTIONS}
         colSpan={2}
       />
@@ -226,11 +231,11 @@ export function PostForm({
           defaultValue={corresponsalInicial ? String(corresponsalInicial) : ""}
           placeholder="Selecciona el corresponsal"
           options={opcionesUsuarios}
-          colSpan={puedeCambiarRedactor ? 2 : 4}
+          colSpan={2}
         />
       )}
 
-      {mostrarUsuarios && puedeCambiarRedactor && (
+      {mostrarUsuarios && puedeElegirEditor && (
         <SelectField
           label="Editor"
           name="userId"
@@ -239,6 +244,19 @@ export function PostForm({
           placeholder="Selecciona un editor"
           options={opcionesUsuarios}
           colSpan={2}
+        />
+      )}
+
+      {mostrarUsuarios && !puedeElegirEditor && (
+        <TextField
+          label="Editor"
+          hint="(quién escribió la nota)"
+          value={nombreEditor}
+          readOnly
+          tabIndex={-1}
+          colSpan={2}
+          className="cursor-default"
+          style={{ borderColor: "var(--color-line)", background: "var(--color-line)" }}
         />
       )}
 

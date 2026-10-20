@@ -5,17 +5,12 @@ import { useState } from "react";
 export default function LogoutButton() {
   const [loading, setLoading] = useState(false);
 
-  async function handleLogout() {
+  function handleLogout() {
     setLoading(true);
-    try {
-      await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
-    } catch {
-      
-    }
     try {
       window.sessionStorage.clear();
     } catch {}
-    window.location.replace("/login");
+    window.location.replace("/api/auth/logout");
   }
 
   return (

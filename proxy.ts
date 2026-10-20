@@ -1,38 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BACKEND_URL } from "@/lib/backend";
+import {
+  TOKEN_COOKIE,
+  USER_COOKIE,
+  REFRESH_COOKIE,
+  TODAS_LAS_COOKIES,
+  cookieDefaults,
+  leerToken,
+  tokenVencido,
+  idEnCookieUsuario,
+} from "@/lib/sesionCookies";
 
 const PUBLIC_PATHS = ["/login"];
 
-const TOKEN_COOKIE = "bn_token";
-const USER_COOKIE = "bn_user";
-const REFRESH_COOKIE = "bn_refresh";
-
 const MARGEN_SEGUNDOS = 120;
-
-const cookieDefaults = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-};
 
 interface RespuestaRefresh {
   accessToken: string;
   expiresAtUtc: string;
   refreshToken: string;
   user: { id: number; email: string; name: string; lastName: string; roles: string[] };
-}
-
-function tokenPorExpirar(token: string | undefined): boolean {
-  if (!token) return true;
-  try {
-    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const { exp } = JSON.parse(atob(payload)) as { exp?: number };
-    if (!exp) return false;
-    return exp - Date.now() / 1000 < MARGEN_SEGUNDOS;
-  } catch {
-    return true;
-  }
 }
 
 async function renovarSesion(refreshToken: string): Promise<RespuestaRefresh | null> {
@@ -50,18 +37,50 @@ async function renovarSesion(refreshToken: string): Promise<RespuestaRefresh | n
   }
 }
 
+function borrarSesion(response: NextResponse) {
+  for (const nombre of TODAS_LAS_COOKIES) {
+    response.cookies.set(nombre, "", { ...cookieDefaults, maxAge: 0, expires: new Date(0) });
+  }
+  return response;
+}
+
+function irAlLogin(request: NextRequest) {
+  const loginUrl = new URL("/login", request.url);
+  const { pathname } = request.nextUrl;
+  if (pathname !== "/" && !pathname.startsWith("/api/")) loginUrl.searchParams.set("from", pathname);
+  return borrarSesion(NextResponse.redirect(loginUrl));
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isPublic =
-    PUBLIC_PATHS.includes(pathname) || pathname.startsWith("/api/auth/");
+  if (pathname.startsWith("/api/auth/")) return NextResponse.next();
+
+  const esLogin = PUBLIC_PATHS.includes(pathname);
   const token = request.cookies.get(TOKEN_COOKIE)?.value;
   const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value;
+  const datos = leerToken(token);
+  const idUsuarioCookie = idEnCookieUsuario(request.cookies.get(USER_COOKIE)?.value);
 
-  if (!isPublic && refreshToken && tokenPorExpirar(token)) {
-    const nueva = await renovarSesion(refreshToken);
+  if (datos && idUsuarioCookie !== null && idUsuarioCookie !== datos.userId) {
+    return esLogin ? borrarSesion(NextResponse.next()) : irAlLogin(request);
+  }
 
-    if (nueva) {
+  const sesionValida = Boolean(datos) && !tokenVencido(datos);
+
+  if (esLogin) {
+    if (sesionValida) return NextResponse.redirect(new URL("/", request.url));
+    return borrarSesion(NextResponse.next());
+  }
+
+  if (refreshToken && tokenVencido(datos, MARGEN_SEGUNDOS)) {
+    const idRefresh = leerToken(refreshToken)?.userId ?? null;
+    const idEsperado = datos?.userId ?? idUsuarioCookie;
+    const mismoUsuario = idRefresh !== null && (idEsperado === null || idEsperado === idRefresh);
+
+    const nueva = mismoUsuario ? await renovarSesion(refreshToken) : null;
+
+    if (nueva && nueva.user?.id === idRefresh) {
       const maxAge = Math.max(
         60,
         Math.floor((new Date(nueva.expiresAtUtc).getTime() - Date.now()) / 1000)
@@ -72,10 +91,7 @@ export async function proxy(request: NextRequest) {
       request.cookies.set(USER_COOKIE, userJson);
       request.cookies.set(REFRESH_COOKIE, nueva.refreshToken);
 
-      const response =
-        pathname === "/login"
-          ? NextResponse.redirect(new URL("/", request.url))
-          : NextResponse.next({ request: { headers: request.headers } });
+      const response = NextResponse.next({ request: { headers: request.headers } });
 
       response.cookies.set(TOKEN_COOKIE, nueva.accessToken, { ...cookieDefaults, maxAge });
       response.cookies.set(USER_COOKIE, userJson, { ...cookieDefaults, maxAge });
@@ -85,28 +101,9 @@ export async function proxy(request: NextRequest) {
       });
       return response;
     }
-
-    if (!token) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("from", pathname);
-      const response = NextResponse.redirect(loginUrl);
-      response.cookies.delete(REFRESH_COOKIE);
-      response.cookies.delete(USER_COOKIE);
-      return response;
-    }
   }
 
-  const hasSession = request.cookies.has(TOKEN_COOKIE);
-
-  if (!isPublic && !hasSession) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("from", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  if (pathname === "/login" && hasSession) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  if (!sesionValida) return irAlLogin(request);
 
   return NextResponse.next();
 }

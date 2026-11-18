@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { adminFetch, AdminApiError } from "@/lib/adminApi";
+import { avisarSitioPublico } from "@/lib/avisarSitio";
 import type { PostDetail } from "@/types/post";
 
 export interface PostActionState {
@@ -20,6 +21,7 @@ export async function createPost(
     return { error: err instanceof AdminApiError ? err.message : "No se pudo guardar la noticia" };
   }
 
+  await avisarSitioPublico();
   revalidatePath("/posts");
   revalidatePath("/posts/mine");
   redirect(`/posts/${created.id}?ok=` + encodeURIComponent("Noticia creada correctamente"));
@@ -36,6 +38,7 @@ export async function updatePost(
     return { error: err instanceof AdminApiError ? err.message : "No se pudo actualizar la noticia" };
   }
 
+  await avisarSitioPublico();
   revalidatePath("/posts");
   revalidatePath("/posts/mine");
   revalidatePath(`/posts/${id}`);
@@ -50,6 +53,7 @@ export async function deletePost(id: number, returnTo: string) {
     redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
   }
 
+  await avisarSitioPublico();
   revalidatePath("/posts");
   revalidatePath("/posts/mine");
   redirect(`${returnTo}?ok=${encodeURIComponent("Noticia eliminada")}`);

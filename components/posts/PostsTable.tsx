@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
 import { deletePost } from "@/lib/actions/posts";
 import { canDeletePosts, canEditPost } from "@/lib/roles";
+import { fechaCorta } from "@/lib/formato";
 import type { PostListItem } from "@/types/post";
 
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
@@ -66,7 +67,7 @@ export function PostsTable({
                   </p>
                 </td>
                 <td className="px-4 py-3 font-tabular text-[var(--color-ink-soft)] whitespace-nowrap">
-                  {post.createdAt ? post.createdAt.slice(0, 10) : ""}
+                  {post.createdAt ? fechaCorta(post.createdAt) : ""}
                 </td>
                 <td className="px-4 py-3">
                   <span

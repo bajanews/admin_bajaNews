@@ -4,6 +4,7 @@ import { adminFetch, AdminApiError } from "@/lib/adminApi";
 import { getSession } from "@/lib/session";
 import { canDeletePosts, canEditPost } from "@/lib/roles";
 import { uploadUrl } from "@/lib/assets";
+import { fechaCompleta, fechaLarga } from "@/lib/formato";
 import { ModuleCard } from "@/components/ModuleCard";
 import { FlashBanner } from "@/components/FlashBanner";
 import { ConfirmDeleteForm } from "@/components/ConfirmDeleteForm";
@@ -16,15 +17,6 @@ const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
   RETENIDA: { bg: "var(--color-danger-tint)", fg: "var(--color-danger)" },
   ARCHIVADA: { bg: "var(--color-line)", fg: "var(--color-ink-soft)" },
 };
-
-function fechaLarga(iso: string | null | undefined): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("es-MX", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
 export default async function PostShowPage({
   params,
@@ -77,8 +69,8 @@ export default async function PostShowPage({
           Editor: <strong className="text-[var(--color-ink)]">{post.userName ?? post.authorEmail}</strong>
         </span>
         <span className="text-[var(--color-ink-soft)] font-tabular">
-          Creado {post.createdAt?.slice(0, 10)}
-          {post.updatedAt ? ` · Actualizado ${post.updatedAt.slice(0, 10)}` : ""}
+          Creado {post.createdAt ? fechaCompleta(post.createdAt) : ""}
+          {post.updatedAt ? ` · Actualizado ${fechaCompleta(post.updatedAt)}` : ""}
         </span>
       </div>
 
